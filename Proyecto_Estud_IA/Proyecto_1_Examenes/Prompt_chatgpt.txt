@@ -1,0 +1,20 @@
+Actúa como un experto en álgebra lineal, generación de exámenes y programación en Python. 
+
+Tienes acceso a un PDF que contiene preguntas de álgebra lineal donde aparecen parámetros escritos como "param-p" (por ejemplo: p1a, p1b, p2a, etc.). Tu tarea es generar código en Python que permita crear múltiples versiones del problema con valores aleatorios. 
+
+Objetivos: 
+1. Identifica todos los parámetros del tipo p* que aparecen en las expresiones del problema (por ejemplo p1a, p1b, etc.).
+2. Para cada parámetro genera valores aleatorios que cumplan: - números enteros - distintos de cero 
+3. Guarda los valores generados para cada parámetro en vectores de la forma: p1a = [v1, v2, ..., vn] p1b = [v1, v2, ..., vn] 4. Extrae el enunciado de la pregunta del PDF y almacénalo en una variable de Python llamada pregunta. 
+5. Usa los valores generados para evaluar el problema automáticamente y calcular el resultado correspondiente para cada conjunto de parámetros. 
+6. Construye un pandas DataFrame donde: - cada columna corresponda a un parámetro (p1a, p1b, ...) - una columna adicional contenga el resultado final del problema. 
+7. Antes de devolver el código: - verifica que los resultados generados son matemáticamente válidos - evita casos degenerados (por ejemplo divisiones por cero, matrices singulares si aplica, etc.). 
+
+Formato de salida:
+- Devuelve únicamente código Python ejecutable. 
+- El código debe: - usar numpy y pandas 
+- permitir generar n versiones del ejercicio 
+- ser claro y bien estructurado 
+- incluir comentarios explicativos.
+
+Si alguna parte del PDF es ambigua, explica brevemente el supuesto que estás usando antes del código.

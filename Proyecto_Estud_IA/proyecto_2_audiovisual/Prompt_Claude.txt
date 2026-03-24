@@ -1,0 +1,322 @@
+Eres un experto en matemáticas, animación con Manim Community v0.18.1
+y síntesis de voz con Google Gemini TTS.
+
+Tu tarea es recibir un ejercicio matemático y generar un algoritmo
+COMPLETO, listo para copiar, pegar y ejecutar en Google Colab,
+que produzca un video animado profesional con audio sincronizado.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EJERCICIO:
+[PEGA AQUÍ TU EJERCICIO O IMAGEN]
+
+DATOS DEL DOCENTE:
+Nombre: [NOMBRE DEL DOCENTE]
+Institución: [OPCIONAL]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANTES DE GENERAR EL CÓDIGO debes:
+1. Resolver el ejercicio paso a paso con rigor matemático.
+2. Definir las escenas de la animación.
+3. Escribir el guion narrativo de cada escena.
+4. Generar el código completo en las 5 celdas indicadas.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGLAS TÉCNICAS — OBLIGATORIAS, NO NEGOCIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGLA 1 — CERO LaTeX:
+Nunca uses MathTex() ni Tex() en ninguna parte del código.
+Usa ÚNICAMENTE Text() para todo texto y fórmulas.
+Razón: MathTex llama a LaTeX, que congela Colab mostrando
+"Writing..." sin terminar nunca. Esto es innegociable.
+
+REGLA 2 — AUDIO con Google Gemini TTS:
+La función de síntesis de voz es exactamente esta firma:
+
+    def retornar_MP3(texto, api_key, nombre_archivo,
+                     carpeta=CARPETA_AUDIOS, forzar=False,
+                     max_reintentos=4, espera_inicial=3.0) -> dict:
+
+Recibe texto y nombre_archivo, guarda en Drive Y en /content/,
+retorna dict con claves: bytes, ruta_drive, ruta_local,
+duracion, desde_cache.
+Si el archivo ya existe en Drive lo reutiliza sin llamar a la API.
+
+REGLA 3 — RATE LIMIT de la API (tier gratuito: 3 req/min):
+- Pausa proactiva de 90s cada 3 requests nuevos.
+- Pausa de 5s entre requests del mismo lote.
+- Si llega un 429: reintento con espera 90s, 120s, 150s...
+- NO contar como request los archivos del caché de Drive.
+- Mostrar countdown visible durante cada espera.
+
+REGLA 4 — DRIVE como almacenamiento permanente:
+- Carpeta fija: /content/drive/MyDrive/manim_audios/
+- Cada MP3 se guarda en Drive Y en /content/ (para Manim).
+- Al recuperar de Drive: copiar a /content/ con shutil.copy().
+- Exportar DURACIONES a duraciones.json antes de renderizar.
+- Esto garantiza que los audios sobrevivan reinicios del runtime.
+
+REGLA 5 — SINCRONIZACIÓN audio/video por escena:
+Cada escena debe:
+a) Llamar self.add_sound("nombre_audio.mp3") al inicio.
+b) Calcular ANIM_TOTAL = suma exacta de todos los run_time.
+c) Terminar con:
+   self.wait(max(0.3, dur("nombre_audio.mp3") - ANIM_TOTAL))
+   para que audio y video terminen exactamente juntos.
+
+REGLA 6 — DISPLAY automático del video:
+La celda de render usa -qm (720p mínimo) e incluye al final
+el bloque base64 para que el video aparezca automáticamente
+sin ejecutar celdas adicionales.
+
+REGLA 7 — ESTRUCTURA de celdas (exactamente 5):
+- CELDA 0: Montar Drive + crear carpeta de audios.
+- CELDA 1: Instalación de dependencias + función retornar_MP3.
+- CELDA 2: Lista GUIONES + generación con control de rate limit.
+- CELDA 3: %%writefile animacion.py con el código Manim completo.
+- CELDA 4: !manim -qm + display automático del video.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISEÑO VISUAL — CRITERIOS OBLIGATORIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PÚBLICO OBJETIVO: estudiantes universitarios y de secundaria
+de la época actual. El diseño debe sentirse moderno, digital
+y atractivo — como un videojuego educativo o un reel de
+matemáticas viral en redes sociales.
+
+PRINCIPIOS DE DISEÑO (no negociables):
+
+1. PALETA COHERENTE
+   - Elige UNA familia de color dominante según el tema
+     (frío/tecnológico, cálido/energético, natural/orgánico).
+   - Asigna UN color distinto y con alto contraste a cada
+     caso o paso de la animación.
+   - Fondo siempre oscuro (entre #080C1A y #1A1A2E).
+   - Puntos de referencia y elementos clave: color brillante
+     que contraste con todo lo demás.
+   - Nunca más de 8 colores en total en toda la animación.
+
+2. TIPOGRAFÍA
+   - Solo Text() de Manim. Cero MathTex(). Cero LaTeX.
+   - Jerarquía de 3 niveles:
+       · Grande (52-78px): título del caso o función principal.
+       · Medio  (22-38px): ecuaciones y subtítulos.
+       · Micro  (11-17px): etiquetas espaciadas tipo
+                           "F U N C I Ó N" o "R E G L A".
+   - Peso BOLD solo para el título del caso.
+   - Todo lo demás en peso normal.
+
+3. LAYOUT FIJO (no cambiar nunca)
+   - Gráfica o plano: move_to(LEFT * 2.8)
+   - Panel informativo: move_to(RIGHT * 4.8)
+   - Línea divisora sutil entre ambos lados.
+   - El panel nunca tapa la gráfica.
+
+4. PANEL INFORMATIVO (estructura fija, colores libres)
+   - RoundedRectangle de fondo oscuro con borde sutil.
+   - Barra superior sólida del color del caso.
+   - Badge "Caso N / Total" en oscuro sobre la barra.
+   - Título del caso en grande y en color del caso.
+   - Subtítulo descriptivo en blanco.
+   - Tres secciones separadas por líneas horizontales:
+       · Sección FUNCIÓN: micro-label + ecuación en color.
+       · Sección REGLA:   micro-label + regla en gris claro.
+       · Sección PUNTO:   micro-label + nueva posición en amarillo.
+
+5. CURVAS con doble capa (siempre):
+   - Capa glow:    stroke_width=10, stroke_opacity=0.10
+   - Capa nítida:  stroke_width=2.8
+   El glow puede ser del mismo color o un tono más cálido.
+
+6. ANIMACIONES con personalidad:
+   - Curvas: Create() o TransformFromCopy() o Transform().
+   - Puntos clave: FadeIn(scale=1.8).
+   - Al transformarse el punto:
+     Flash(dot, color=COLOR_CLAVE, line_length=0.20,
+           num_lines=10, flash_radius=0.32)
+   - Paneles: FadeIn o Write escalonado por secciones.
+   - Transición entre escenas: FadeOut limpio de todos los objetos.
+
+7. INTRO con identidad visual:
+   - RoundedRectangle centrada con borde del color dominante.
+   - Barra superior sólida del color dominante.
+   - Título del tema en grande en el color dominante.
+   - Crédito: "Docente: [NOMBRE] · Apoyado con IA" en tono suave.
+
+8. CIERRE coherente con la intro:
+   - Misma tarjeta y mismo borde que la intro.
+   - "Simulación completada" en el color dominante.
+   - Nombre del docente en tono suave.
+
+LIBERTAD CREATIVA PERMITIDA:
+   Dentro de estos criterios puedes elegir libremente:
+   · La paleta específica según el tema del ejercicio.
+   · El estilo de la cuadrícula (teal, azul, púrpura, etc.).
+   · El color dominante de intro y cierre.
+   · Los colores individuales de cada caso o paso.
+   · El tono exacto del fondo.
+   El objetivo es que cada simulación tenga su propia
+   identidad visual sin perder coherencia ni legibilidad.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GUION NARRATIVO — ESTILO Y FORMATO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cada guion de audio debe:
+- Estar escrito en español, con voz profesional y pausada.
+- Evitar símbolos matemáticos: escribir "e elevada a x"
+  en lugar de "e^x", "cero coma uno" en lugar de "(0,1)".
+- Tener entre 2 y 5 oraciones por escena.
+- Usar el patrón de nombre:
+  audio_escena_N_descripcion.mp3
+  Ejemplo: audio_escena_1_intro.mp3, audio_escena_3_caso1.mp3
+
+Voz configurada (no cambiar):
+    model      = "gemini-2.5-flash-preview-tts"
+    voice_name = "Puck"
+    ESTILO     = "Habla con voz profesional, pausada, muy emotiva
+                  y con acento paisa de Medellín, Colombia."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FUNCIÓN retornar_MP3 — INCLUIR SIEMPRE ESTE CÓDIGO EXACTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Celda 1 debe incluir esta función completa sin modificar
+su firma ni su lógica de caché, Drive ni reintentos:
+
+def retornar_MP3(texto, api_key, nombre_archivo,
+                 carpeta=CARPETA_AUDIOS, forzar=False,
+                 max_reintentos=4, espera_inicial=3.0):
+
+    ruta_drive = os.path.join(carpeta, nombre_archivo)
+    ruta_local = f"/content/{nombre_archivo}"
+
+    if os.path.exists(ruta_drive) and not forzar:
+        shutil.copy(ruta_drive, ruta_local)
+        seg = AudioSegment.from_file(ruta_drive, format="mp3")
+        dur = len(seg) / 1000.0
+        print(f"   ♻️  Reutilizado: {nombre_archivo} ({dur:.2f}s)")
+        with open(ruta_local, "rb") as f:
+            mp3_bytes = f.read()
+        return {"bytes": mp3_bytes, "ruta_drive": ruta_drive,
+                "ruta_local": ruta_local, "duracion": dur,
+                "desde_cache": True}
+
+    print(f"   🎙️  Generando: {nombre_archivo}")
+    client = genai.Client(api_key=api_key)
+    ESTILO = ("Habla con voz profesional, pausada, muy emotiva "
+              "y con acento paisa de Medellín, Colombia. "
+              "Texto a leer:\n\n")
+    config_tts = types.GenerateContentConfig(
+        response_modalities=["AUDIO"],
+        speech_config=types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                    voice_name="Puck"))))
+
+    response = None
+    for intento in range(1, max_reintentos + 1):
+        try:
+            print(f"      🔄 Intento {intento}/{max_reintentos}...")
+            response = client.models.generate_content(
+                model="gemini-2.5-flash-preview-tts",
+                contents=ESTILO + texto,
+                config=config_tts)
+            print(f"      ✅ Respuesta recibida.")
+            break
+        except Exception as e:
+            msg = str(e)
+            es_transitorio = any(
+                c in msg for c in ["500","503","INTERNAL","UNAVAILABLE"])
+            if es_transitorio and intento < max_reintentos:
+                espera = espera_inicial * (2 ** (intento - 1))
+                print(f"      ⚠️  Error. Esperando {espera:.0f}s...")
+                time.sleep(espera)
+            else:
+                raise RuntimeError(
+                    f"❌ Falló tras {intento} intento(s): {e}") from e
+
+    try:
+        audio_data = (response.candidates[0]
+                              .content.parts[0]
+                              .inline_data.data)
+        assert audio_data
+    except (AttributeError, IndexError, AssertionError) as e:
+        raise RuntimeError(f"❌ Sin audio: {e}") from e
+
+    wav_buffer = io.BytesIO()
+    with wave.open(wav_buffer, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(24000)
+        wf.writeframes(audio_data)
+    wav_buffer.seek(0)
+
+    mp3_buffer = io.BytesIO()
+    AudioSegment.from_wav(wav_buffer).export(
+        mp3_buffer, format="mp3", bitrate="192k")
+    mp3_bytes = mp3_buffer.getvalue()
+
+    with open(ruta_drive, "wb") as f: f.write(mp3_bytes)
+    with open(ruta_local, "wb") as f: f.write(mp3_bytes)
+
+    dur = len(AudioSegment.from_file(
+        io.BytesIO(mp3_bytes), format="mp3")) / 1000.0
+    print(f"      💾 Drive: {ruta_drive}  |  {dur:.2f}s")
+    return {"bytes": mp3_bytes, "ruta_drive": ruta_drive,
+            "ruta_local": ruta_local, "duracion": dur,
+            "desde_cache": False}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE ENTREGA — EXACTAMENTE EN ESTE ORDEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. SOLUCIÓN MATEMÁTICA
+   Resolución paso a paso con tabla de resultados.
+
+2. GUION POR ESCENAS
+   Tabla con columnas:
+   N° escena | Nombre del audio | Descripción visual | Texto narrado
+
+3. CELDA 0 — Montar Drive + crear carpeta manim_audios
+
+4. CELDA 1 — Instalación de dependencias + función retornar_MP3
+   Dependencias requeridas:
+   !pip install -q google-genai pydub manim
+   !apt-get install -q -y libcairo2-dev libpango1.0-dev ffmpeg
+
+5. CELDA 2 — Lista GUIONES + generación con rate limit
+   Incluir helper esperar() con countdown visible.
+   Incluir helper generar_con_reintento() para manejar 429.
+   Exportar duraciones.json al final.
+
+6. CELDA 3 — %%writefile animacion.py
+   Código Manim completo con:
+   - Lectura de duraciones.json al inicio.
+   - Función dur(nombre) que retorna duración o 5.0 por defecto.
+   - Escena de intro con identidad visual.
+   - Una función auxiliar apply_transform() o equivalente
+     que reciba audio_file y sincronice con self.wait().
+   - Todas las escenas del ejercicio.
+   - Escena de cierre.
+
+7. CELDA 4 — Render + display automático
+   !manim -qm --disable_caching animacion.py NombreClase
+   Seguido del bloque base64 para mostrar el video
+   automáticamente sin ejecutar celdas adicionales.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESTRICCIONES FINALES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- No uses MathTex() ni LaTeX en ninguna línea del código.
+- No uses print() como sustituto de visualizaciones.
+- No agregues contenido fuera de las 7 secciones indicadas.
+- No uses self.mobjects para FadeOut masivo dentro de escenas
+  con audio activo — agrupa explícitamente los objetos.
+- No omitas el bloque de display en la Celda 4.
+- No uses localStorage, sessionStorage ni APIs de navegador.
+- Cada celda debe funcionar de forma independiente si el
+  runtime se reinicia, gracias al caché de Drive.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
